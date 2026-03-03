@@ -1,0 +1,42 @@
+/* Cách 2: Style đẹp hơn với hiệu ứng ::CUSTOM SCROLL BAR*/
+.tabulator-tableholder::-webkit-scrollbar {
+    width: 15px;
+    height: 15px;
+}
+
+.tabulator-tableholder::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    /* border-radius: 4px; */
+}
+
+.tabulator-tableholder::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+    /* border-radius: 4px; */
+    transition: all 0.3s ease;
+}
+
+.tabulator-tableholder::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #5a6fd8 0%, #6a4190 100%);
+    transform: scale(1.1);
+}
+
+/* Cách 2: Style đẹp hơn với hiệu ứng */
+
+
+.tabulator-header-filter input {
+    border-radius: 10px;
+    padding: 4px 10px !important;
+    box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.1), 0 2px 4px -2px rgba(255, 255, 255, 0.1);
+}
+
+.tabulator-page-size {
+    color: white;
+}
+
+.tabulator-page-size option {
+    color: black;
+}
+
+.tabulator-row.tabulator-selected {
+    background-color: green!important;
+}
