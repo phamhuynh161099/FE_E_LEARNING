@@ -194,6 +194,12 @@ const data = {
           isDisplay: false,
           guard: ["video-management:read"],
         },
+        {
+          title: "Streaming",
+          url: "/admin/course/video-streaming",
+          isDisplay: false,
+          guard: ["video-streaming:read"],
+        },
       ],
     },
   ],

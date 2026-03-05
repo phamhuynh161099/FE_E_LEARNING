@@ -11,6 +11,8 @@ import { useCurrentUser, useUserStore } from "@/stores/auth-store.zustand";
 import { checkPermissionApply } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Pencil } from "lucide-react";
+import videoApiRequest from "@/apis/video.api";
+import { usePathname, useRouter } from "next/navigation";
 
 const PADDING_IN = 16;
 export default function page() {
@@ -19,6 +21,8 @@ export default function page() {
   const [force, setForce] = useState<boolean>(false);
   const tableInstanceRef = useRef<any>(null);
   const currentUserInfor = useCurrentUser();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const [tablePointScroll, setTablePointScroll] = useState<{
     x: number;
@@ -55,8 +59,24 @@ export default function page() {
       setOpenRoleEditDialog(true);
     };
 
+    const handleClickView = () => {
+      console.log("pathname", pathname);
+      router.push(`/admin/course/video-streaming?videoId=${rowData.id}`);
+    };
+
     return (
       <>
+        {checkPermissionApply(currentUserInfor, "role:update") && (
+          <>
+            <button
+              className="ml-1 px-2 bg-sky-500 rounded-sm cursor-pointer"
+              onClick={() => handleClickView()}
+            >
+              View
+            </button>
+          </>
+        )}
+
         {checkPermissionApply(currentUserInfor, "role:update") && (
           <>
             <button
@@ -83,28 +103,46 @@ export default function page() {
   };
   let columns = [
     {
-      title: "ROLENAME",
-      field: "name",
+      title: "File Name",
+      field: "originalFileName",
       hozAlign: "left",
       width: 160,
-      //* filter dạng select
-      headerFilter: "list" as any,
-      headerFilterParams: { valuesLookup: true, clearable: true } as any,
-      //*
+      headerFilter: "input",
     },
     {
-      title: "DESCRIPTION",
-      field: "description",
+      title: "STATUS",
+      field: "status",
       hozAlign: "left",
       width: 160,
-
-      headerFilter: "input",
+      headerFilter: "list" as any,
+      headerFilterParams: { valuesLookup: true, clearable: true } as any,
       // editor: "input",
       // editable: true,
     },
     {
+      title: "Size",
+      field: "fileSize",
+      hozAlign: "left",
+      width: 160,
+      headerFilter: "input",
+    },
+    {
+      title: "720p",
+      field: "encoded720Path",
+      hozAlign: "left",
+      width: 160,
+      headerFilter: "input",
+    },
+    {
+      title: "1080p",
+      field: "encoded1080Path",
+      hozAlign: "left",
+      width: 160,
+      headerFilter: "input",
+    },
+    {
       formatter: reactFormatter(<GenerateTablutorButton />),
-      width: 150,
+      width: 180,
       hozAlign: "center",
     },
   ];
@@ -168,7 +206,7 @@ export default function page() {
       try {
         let parameter = {};
 
-        const payload = await roleApiRequest.sGetAll(parameter); // placeholder
+        const payload = await videoApiRequest.sGetAll(parameter); // placeholder
         const { data } = payload.payload;
 
         tableInstanceRef.current.replaceData(data);
