@@ -14,6 +14,7 @@ import Hls from "hls.js";
 import disableDevtool from "disable-devtool";
 import { useQueryParams } from "@/hooks/use-query-params";
 import { LOCAL_STORAGE_KEYS } from "@/constants/local-storage.const";
+import { systemConfig } from "@/configs/system.conf";
 
 type StreamMode = "hls" | "native";
 type StatusState = "idle" | "loading" | "ok" | "error";
@@ -30,7 +31,7 @@ export default function VideoStreamTester() {
   const hlsRef = useRef<Hls | null>(null);
   const logBoxRef = useRef<HTMLDivElement>(null);
 
-  const [baseUrl, setBaseUrl] = useState("http://localhost:8080/api/videos");
+  const [baseUrl, setBaseUrl] = useState(`${systemConfig.NEXT_PUBLIC_API_ENDPOINT}api/videos`);
   const [videoId, setVideoId] = useState("");
   const [quality, setQuality] = useState("720");
   const [token, setToken] = useState("");

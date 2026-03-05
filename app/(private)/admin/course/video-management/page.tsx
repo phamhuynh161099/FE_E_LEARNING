@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Pencil } from "lucide-react";
 import videoApiRequest from "@/apis/video.api";
 import { usePathname, useRouter } from "next/navigation";
+import AddVideoPopup from "./_component/add-video.popup";
 
 const PADDING_IN = 16;
 export default function page() {
@@ -42,9 +43,9 @@ export default function page() {
    */
   const [openRoleEditDialog, setOpenRoleEditDialog] = useState<boolean>(false);
   /**
-   * State quản lý bật tắt popup add role
+   * State quản lý bật tắt popup add video management
    */
-  const [openRoleAddDialog, setOpenRoleAddDialog] = useState<boolean>(false);
+  const [openVideoAddDialog, setOpenRoleAddDialog] = useState<boolean>(false);
 
   //* React Tablutor
   const GenerateTablutorButton = (props: any) => {
@@ -280,7 +281,7 @@ export default function page() {
           <div className="overflow-x-scroll md:overflow-hidden w-[calc(100vw-2rem)] md:w-auto flex justify-end md:flex-wrap gap-2 py-1">
             <div>
               <Button className="" onClick={() => setOpenRoleAddDialog(true)}>
-                <Pencil /> Add New Role
+                <Pencil /> Add New Video
               </Button>
             </div>
           </div>
@@ -307,13 +308,13 @@ export default function page() {
         />
       )} */}
 
-      {/* <AddRolePopup
-        open={openRoleAddDialog}
+      <AddVideoPopup
+        open={openVideoAddDialog}
         onOpenChange={(value: boolean, needRefresh: boolean) => {
           setOpenRoleAddDialog(value);
           needRefresh && setForce((prev) => !prev);
         }}
-      /> */}
+      />
     </>
   );
 }

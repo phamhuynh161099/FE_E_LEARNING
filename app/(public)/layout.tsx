@@ -1,4 +1,6 @@
 "use client";
+import CusLoading from "@/components/cus-loading";
+import useLoadingStore from "@/stores/loading-store.zustand";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -7,14 +9,14 @@ export default function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  //   const { zStatusLoading } = useLoadingStore();
+    const { zStatusLoading } = useLoadingStore();
   return (
     <>
       {/* <UnProtectRouter> */}
       {children}
       {/* </UnProtectRouter> */}
 
-      {/* {zStatusLoading && <CusLoading />} */}
+      {zStatusLoading && <CusLoading />}
     </>
   );
 }
