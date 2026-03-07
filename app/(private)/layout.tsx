@@ -73,16 +73,16 @@ export default function Layout({
       {zStatusLoading && <CusLoading />}
 
       {/* Load CSS */}
-      <link
+      {/* <link
         rel="stylesheet"
         href="/libs/tabulator-master/dist/css/tabulator.min.css"
       />
       <link
         rel="stylesheet"
         href="/libs/tabulator-master/dist/css/tabulator_midnight.min.css"
-      />
+      /> */}
       {/* Load JS */}
-      <script src="/libs/tabulator-master/dist/js/tabulator.min.js" />
+      {/* <script src="/libs/tabulator-master/dist/js/tabulator.min.js" /> */}
     </>
   );
 }

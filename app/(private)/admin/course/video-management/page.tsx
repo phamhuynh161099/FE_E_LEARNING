@@ -14,6 +14,7 @@ import { Pencil } from "lucide-react";
 import videoApiRequest from "@/apis/video.api";
 import { usePathname, useRouter } from "next/navigation";
 import AddVideoPopup from "./_component/add-video.popup";
+import TrackingVideoPopup from "./_component/tracking-video.popup";
 
 const PADDING_IN = 16;
 export default function page() {
@@ -35,9 +36,9 @@ export default function page() {
   });
 
   /**
-   ** Data cho popup role
+   ** Data cho popup video
    */
-  const [dataChoosedRole, setDataChoosedRole] = useState<any>();
+  const [dataChoosedVideo, setDataChoosedVideo] = useState<any>();
   /**
    * State quản lý bật tắt popup edit role
    */
@@ -46,6 +47,10 @@ export default function page() {
    * State quản lý bật tắt popup add video management
    */
   const [openVideoAddDialog, setOpenRoleAddDialog] = useState<boolean>(false);
+  /**
+   * State quản lý bật tắt popup  tracking video management
+   */
+  const [openVideoTrackingDialog, setOpenVideoTrackingDialog] = useState<boolean>(false);
 
   //* React Tablutor
   const GenerateTablutorButton = (props: any) => {
@@ -56,8 +61,13 @@ export default function page() {
 
     const handleClickEdit = () => {
       // console.log(">>>rowata", rowData);
-      setDataChoosedRole(rowData);
+      setDataChoosedVideo(rowData);
       setOpenRoleEditDialog(true);
+    };
+
+    const handleClickTracking = () => {
+      setDataChoosedVideo(rowData);
+      setOpenVideoTrackingDialog(true);
     };
 
     const handleClickView = () => {
@@ -67,6 +77,18 @@ export default function page() {
 
     return (
       <>
+        {checkPermissionApply(currentUserInfor, "role:update") && (
+          <>
+            <button
+              className="ml-1 px-2 bg-yellow-500 rounded-sm cursor-pointer"
+              onClick={() => handleClickTracking()}
+            >
+              Tracking
+            </button>
+          </>
+        )}
+
+
         {checkPermissionApply(currentUserInfor, "role:update") && (
           <>
             <button
@@ -104,9 +126,18 @@ export default function page() {
   };
   let columns = [
     {
+      title: "ID",
+      field: "id",
+      hozAlign: "left",
+      vertAlign: "middle",
+      width: 160,
+      headerFilter: "input",
+    },
+    {
       title: "File Name",
       field: "originalFileName",
       hozAlign: "left",
+      vertAlign: "middle",
       width: 160,
       headerFilter: "input",
     },
@@ -114,6 +145,7 @@ export default function page() {
       title: "STATUS",
       field: "status",
       hozAlign: "left",
+      vertAlign: "middle",
       width: 160,
       headerFilter: "list" as any,
       headerFilterParams: { valuesLookup: true, clearable: true } as any,
@@ -124,27 +156,31 @@ export default function page() {
       title: "Size",
       field: "fileSize",
       hozAlign: "left",
+      vertAlign: "middle",
       width: 160,
       headerFilter: "input",
     },
     {
-      title: "720p",
-      field: "encoded720Path",
+      title: "Duration",
+      field: "totalDuration",
       hozAlign: "left",
+      vertAlign: "middle",
       width: 160,
       headerFilter: "input",
     },
     {
-      title: "1080p",
-      field: "encoded1080Path",
+      title: "Video Quality",
+      field: "resolution",
       hozAlign: "left",
+      vertAlign: "middle",
       width: 160,
       headerFilter: "input",
     },
     {
       formatter: reactFormatter(<GenerateTablutorButton />),
-      width: 180,
+      width: 240,
       hozAlign: "center",
+      vertAlign: "middle",
     },
   ];
 
@@ -162,11 +198,14 @@ export default function page() {
         columns: columns,
         data: [],
         height: height,
+        rowHeight: 40,
         layout: "fitColumns",
 
+        groupBy: ["id"],
+
         pagination: "local",
-        paginationSize: 5,
-        paginationSizeSelector: [1, 5, 10, 15, 20],
+        paginationSize: 10,
+        paginationSizeSelector: [10, 20],
 
         // selectableRows: true,
       });
@@ -297,9 +336,9 @@ export default function page() {
       </section>
 
       {/* popup edit row */}
-      {/* {dataChoosedRole && (
+      {/* {dataChoosedVideo && (
         <EditRolePopup
-          data={dataChoosedRole}
+          data={dataChoosedVideo}
           open={openRoleEditDialog}
           onOpenChange={(value: boolean, needRefresh: boolean) => {
             setOpenRoleEditDialog(value);
@@ -307,6 +346,18 @@ export default function page() {
           }}
         />
       )} */}
+
+      {/* popup tracking video */}
+      {dataChoosedVideo && (
+        <TrackingVideoPopup
+          data={dataChoosedVideo}
+          open={openVideoTrackingDialog}
+          onOpenChange={(value: boolean, needRefresh: boolean) => {
+            setOpenVideoTrackingDialog(value);
+            needRefresh && setForce((prev) => !prev);
+          }}
+        />
+      )}
 
       <AddVideoPopup
         open={openVideoAddDialog}

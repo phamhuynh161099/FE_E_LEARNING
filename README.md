@@ -6,4 +6,4 @@ Sử dụng 2 dạng table
 - ShadcnUI / Table
 
 
-nohup java -jar build/libs/boilerplate-0.0.1-SNAPSHOT.jar > log.txt 2>&1
+nohup npm run start > log.txt 2>&1 &

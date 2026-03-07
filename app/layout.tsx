@@ -24,6 +24,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      {/* Load CSS tabulator */}
+      <link
+        rel="stylesheet"
+        href="/libs/tabulator-master/dist/css/tabulator.min.css"
+      />
+      <link
+        rel="stylesheet"
+        href="/libs/tabulator-master/dist/css/tabulator_midnight.min.css"
+      />
+      {/* Load JS tabulator */}
+      <script src="/libs/tabulator-master/dist/js/tabulator.min.js" />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
