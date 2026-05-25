@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import { reactFormatter } from "react-tabulator";
-// @ts-ignore
+//@ts-ignore
 import "../../../../../public/css/test-tabulator/custom.css";
 import Script from "next/script";
 import roleApiRequest from "@/apis/role.api";
@@ -14,8 +14,9 @@ import { Separator } from "@/components/ui/separator";
 import { Pencil } from "lucide-react";
 import videoApiRequest from "@/apis/video.api";
 import { usePathname, useRouter } from "next/navigation";
-import AddVideoPopup from "./_component/add-video.popup";
-import TrackingVideoPopup from "./_component/tracking-video.popup";
+import CourseAddPopup from "./_component/course-add.popup";
+// import AddVideoPopup from "./_component/add-video.popup";
+// import TrackingVideoPopup from "./_component/tracking-video.popup";
 
 const PADDING_IN = 16;
 export default function page() {
@@ -47,21 +48,19 @@ export default function page() {
   /**
    * State quản lý bật tắt popup add video management
    */
-  const [openVideoAddDialog, setOpenRoleAddDialog] = useState<boolean>(false);
+  const [openVideoAddDialog, setOpenCourseAddDialog] = useState<boolean>(false);
   /**
    * State quản lý bật tắt popup  tracking video management
    */
-  const [openVideoTrackingDialog, setOpenVideoTrackingDialog] = useState<boolean>(false);
+  const [openVideoTrackingDialog, setOpenVideoTrackingDialog] =
+    useState<boolean>(false);
 
   //* React Tablutor
   const GenerateTablutorButton = (props: any) => {
     const rowData = props.cell._cell.row.data;
-    const handleClickDelete = () => {
-      // console.log(">>>rowData", rowData);
-    };
+    const handleClickDelete = () => {};
 
     const handleClickEdit = () => {
-      // console.log(">>>rowata", rowData);
       setDataChoosedVideo(rowData);
       setOpenRoleEditDialog(true);
     };
@@ -88,7 +87,6 @@ export default function page() {
             </button>
           </>
         )}
-
 
         {checkPermissionApply(currentUserInfor, "role:update") && (
           <>
@@ -129,59 +127,32 @@ export default function page() {
     {
       title: "ID",
       field: "id",
-      hozAlign: "left",
-      vertAlign: "middle",
-      width: 160,
-      headerFilter: "input",
     },
     {
       title: "File Name",
       field: "originalFileName",
-      hozAlign: "left",
-      vertAlign: "middle",
-      width: 160,
-      headerFilter: "input",
     },
     {
       title: "STATUS",
       field: "status",
-      hozAlign: "left",
-      vertAlign: "middle",
-      width: 160,
       headerFilter: "list" as any,
       headerFilterParams: { valuesLookup: true, clearable: true } as any,
-      // editor: "input",
-      // editable: true,
     },
     {
       title: "Size",
       field: "fileSize",
-      hozAlign: "left",
-      vertAlign: "middle",
-      width: 160,
-      headerFilter: "input",
     },
     {
       title: "Duration",
       field: "totalDuration",
-      hozAlign: "left",
-      vertAlign: "middle",
-      width: 160,
-      headerFilter: "input",
     },
     {
       title: "Video Quality",
       field: "resolution",
-      hozAlign: "left",
-      vertAlign: "middle",
-      width: 160,
-      headerFilter: "input",
     },
     {
       formatter: reactFormatter(<GenerateTablutorButton />),
       width: 240,
-      hozAlign: "center",
-      vertAlign: "middle",
     },
   ];
 
@@ -191,22 +162,26 @@ export default function page() {
       const element = document.getElementById("grid_wrapper");
       const height =
         element && element.getBoundingClientRect().height - PADDING_IN * 2;
-
-      console.log("current height", height);
-
       // @ts-ignore
       const table = new window.Tabulator(tableRef.current, {
+        columnDefaults: {
+          headerSort: true,
+          vertAlign: "middle",
+          headerFilter: "input",
+          headerWordWrap: true,
+          width: 160,
+        },
         columns: columns,
+
         data: [],
         height: height,
         rowHeight: 40,
         layout: "fitColumns",
 
-        groupBy: ["id"],
-
         pagination: "local",
         paginationSize: 10,
         paginationSizeSelector: [10, 20],
+        paginationCounter: "pages",
 
         // selectableRows: true,
       });
@@ -320,8 +295,8 @@ export default function page() {
 
           <div className="overflow-x-scroll md:overflow-hidden w-[calc(100vw-2rem)] md:w-auto flex justify-end md:flex-wrap gap-2 py-1">
             <div>
-              <Button className="" onClick={() => setOpenRoleAddDialog(true)}>
-                <Pencil /> Add New Video
+              <Button className="" onClick={() => setOpenCourseAddDialog(true)}>
+                <Pencil /> Add New Course
               </Button>
             </div>
           </div>
@@ -336,20 +311,8 @@ export default function page() {
         </div>
       </section>
 
-      {/* popup edit row */}
-      {/* {dataChoosedVideo && (
-        <EditRolePopup
-          data={dataChoosedVideo}
-          open={openRoleEditDialog}
-          onOpenChange={(value: boolean, needRefresh: boolean) => {
-            setOpenRoleEditDialog(value);
-            needRefresh && setForce((prev) => !prev);
-          }}
-        />
-      )} */}
-
       {/* popup tracking video */}
-      {dataChoosedVideo && (
+      {/* {dataChoosedVideo && (
         <TrackingVideoPopup
           data={dataChoosedVideo}
           open={openVideoTrackingDialog}
@@ -358,12 +321,12 @@ export default function page() {
             needRefresh && setForce((prev) => !prev);
           }}
         />
-      )}
+      )} */}
 
-      <AddVideoPopup
+      <CourseAddPopup
         open={openVideoAddDialog}
         onOpenChange={(value: boolean, needRefresh: boolean) => {
-          setOpenRoleAddDialog(value);
+          setOpenCourseAddDialog(value);
           needRefresh && setForce((prev) => !prev);
         }}
       />

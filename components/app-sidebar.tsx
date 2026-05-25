@@ -202,6 +202,22 @@ const data = {
         },
       ],
     },
+
+    {
+      title: "Course",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: false,
+      isDisplay: false,
+      items: [
+        {
+          title: "Management",
+          url: "/admin/course/course-management",
+          isDisplay: false,
+          guard: ["video-management:read"],
+        },
+      ],
+    },
   ],
 
   projects: [

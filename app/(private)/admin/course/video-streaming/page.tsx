@@ -532,18 +532,20 @@ import disableDevtool from "disable-devtool";
 import { useQueryParams } from "@/hooks/use-query-params";
 import { LOCAL_STORAGE_KEYS } from "@/constants/local-storage.const";
 import { systemConfig } from "@/configs/system.conf";
+import { useCurrentUser } from "@/stores/auth-store.zustand";
 
 type StreamMode = "hls" | "native";
 type StatusState = "idle" | "loading" | "ok" | "error";
 
 export default function VideoStreamTester() {
+  const currentUserInfor = useCurrentUser();
   const videoRef = useRef<HTMLVideoElement>(null);
   // ⬇ Đây là container được fullscreen (không phải <video> trực tiếp)
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<Hls | null>(null);
 
   const [baseUrl, setBaseUrl] = useState(
-    `${systemConfig.NEXT_PUBLIC_API_ENDPOINT}api/videos`
+    `${systemConfig.NEXT_PUBLIC_API_ENDPOINT}api/videos`,
   );
   const [videoId, setVideoId] = useState("");
   const [quality, setQuality] = useState("720");
@@ -558,7 +560,8 @@ export default function VideoStreamTester() {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Watermark text — thay bằng email/username thực từ auth nếu cần
-  const watermarkText = "user@example.com";
+  // const watermarkText = "user@example.com";
+  const [watermarkText, setWatermarkText] = useState<String | any>("");
 
   const { getParam } = useQueryParams();
 
@@ -603,11 +606,22 @@ export default function VideoStreamTester() {
     if (videoId && token) loadVideo();
   }, [videoId, token]);
 
+  useEffect(() => {
+    console.log("updateUserInfor", currentUserInfor);
+    setWatermarkText(currentUserInfor?.email as String);
+  }, [currentUserInfor]);
+
   const stopVideo = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
-    if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
-    if (blobUrlRef.current) { URL.revokeObjectURL(blobUrlRef.current); blobUrlRef.current = null; }
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
     video.pause();
     video.removeAttribute("src");
     video.load();
@@ -633,7 +647,8 @@ export default function VideoStreamTester() {
           debug: false,
           enableWorker: true,
           xhrSetup: (xhr: XMLHttpRequest) => {
-            if (token.trim()) xhr.setRequestHeader("Authorization", `Bearer ${token.trim()}`);
+            if (token.trim())
+              xhr.setRequestHeader("Authorization", `Bearer ${token.trim()}`);
           },
         });
         hlsRef.current = hls;
@@ -652,16 +667,23 @@ export default function VideoStreamTester() {
             setOverlayMsg("❌ " + data.details);
             setOverlayHidden(false);
             if (data.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
-            else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
+            else if (data.type === Hls.ErrorTypes.MEDIA_ERROR)
+              hls.recoverMediaError();
             else hls.destroy();
           }
         });
       } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
         video.src = url;
         video.onloadedmetadata = () => {
-          setStatus("ok"); setStatusText("Safari HLS ready"); setOverlayHidden(true); video.play();
+          setStatus("ok");
+          setStatusText("Safari HLS ready");
+          setOverlayHidden(true);
+          video.play();
         };
-        video.onerror = () => { setStatus("error"); setStatusText("Lỗi Safari HLS"); };
+        video.onerror = () => {
+          setStatus("error");
+          setStatusText("Lỗi Safari HLS");
+        };
       } else {
         setStatus("error");
         setStatusText("HLS không được hỗ trợ");
@@ -674,7 +696,10 @@ export default function VideoStreamTester() {
         .then(async (res) => {
           if (!res.ok) {
             const msg = `HTTP ${res.status} ${res.statusText}`;
-            setStatus("error"); setStatusText(msg); setOverlayMsg("❌ " + msg); setOverlayHidden(false);
+            setStatus("error");
+            setStatusText(msg);
+            setOverlayMsg("❌ " + msg);
+            setOverlayHidden(false);
             return;
           }
           const blob = await res.blob();
@@ -682,15 +707,19 @@ export default function VideoStreamTester() {
           blobUrlRef.current = blobUrl;
           video.src = blobUrl;
           const onLoaded = () => {
-            setStatus("ok"); setStatusText("Native video ready"); setOverlayHidden(true);
+            setStatus("ok");
+            setStatusText("Native video ready");
+            setOverlayHidden(true);
             video.play().catch(() => {});
             video.removeEventListener("loadedmetadata", onLoaded);
             video.removeEventListener("error", onError);
           };
           const onError = () => {
             const err = video.error;
-            setStatus("error"); setStatusText(`Lỗi video (code ${err?.code})`);
-            setOverlayMsg("❌ Không load được video"); setOverlayHidden(false);
+            setStatus("error");
+            setStatusText(`Lỗi video (code ${err?.code})`);
+            setOverlayMsg("❌ Không load được video");
+            setOverlayHidden(false);
             video.removeEventListener("loadedmetadata", onLoaded);
             video.removeEventListener("error", onError);
           };
@@ -698,8 +727,10 @@ export default function VideoStreamTester() {
           video.addEventListener("error", onError);
         })
         .catch(() => {
-          setStatus("error"); setStatusText("Lỗi kết nối");
-          setOverlayMsg("❌ Không thể kết nối server"); setOverlayHidden(false);
+          setStatus("error");
+          setStatusText("Lỗi kết nối");
+          setOverlayMsg("❌ Không thể kết nối server");
+          setOverlayHidden(false);
         });
     }
   }, [mode, buildUrl, stopVideo, token]);
@@ -711,16 +742,16 @@ export default function VideoStreamTester() {
     error: "bg-red-400 shadow-[0_0_6px_#f87171]",
   };
 
-  useEffect(() => {
-    disableDevtool({
-      ondevtoolopen: () => {
-        document.body.innerHTML = "Devtool được phát hiện!";
-        window.location.href = "https://localhost:8080";
-      },
-      disableMenu: true,
-      url: "https://localhost:8080",
-    });
-  }, []);
+  // useEffect(() => {
+  //   disableDevtool({
+  //     ondevtoolopen: () => {
+  //       document.body.innerHTML = "Devtool được phát hiện!";
+  //       window.location.href = "https://localhost:8080";
+  //     },
+  //     disableMenu: true,
+  //     url: "https://localhost:8080",
+  //   });
+  // }, []);
 
   useLayoutEffect(() => {}, []);
 
@@ -818,7 +849,11 @@ export default function VideoStreamTester() {
             <Field label="BASE URL">
               <input
                 className="mono w-full rounded-lg px-3 py-2 text-sm"
-                style={{ background: "#0d1117", border: "1px solid #1e2d3d", color: "#e2e8f0" }}
+                style={{
+                  background: "#0d1117",
+                  border: "1px solid #1e2d3d",
+                  color: "#e2e8f0",
+                }}
                 value={baseUrl}
                 onChange={(e) => setBaseUrl(e.target.value)}
                 placeholder="http://localhost:8080"
@@ -827,7 +862,11 @@ export default function VideoStreamTester() {
             <Field label="VIDEO ID">
               <input
                 className="mono w-full rounded-lg px-3 py-2 text-sm"
-                style={{ background: "#0d1117", border: "1px solid #1e2d3d", color: "#e2e8f0" }}
+                style={{
+                  background: "#0d1117",
+                  border: "1px solid #1e2d3d",
+                  color: "#e2e8f0",
+                }}
                 type="number"
                 min={1}
                 value={videoId}
@@ -837,7 +876,11 @@ export default function VideoStreamTester() {
             <Field label="QUALITY">
               <select
                 className="mono w-full rounded-lg px-3 py-2 text-sm"
-                style={{ background: "#0d1117", border: "1px solid #1e2d3d", color: "#e2e8f0" }}
+                style={{
+                  background: "#0d1117",
+                  border: "1px solid #1e2d3d",
+                  color: "#e2e8f0",
+                }}
                 value={quality}
                 onChange={(e) => setQuality(e.target.value)}
               >
@@ -852,7 +895,11 @@ export default function VideoStreamTester() {
               <div className="relative">
                 <input
                   className="mono w-full rounded-lg px-3 py-2 text-sm pr-20"
-                  style={{ background: "#0d1117", border: "1px solid #1e2d3d", color: "#e2e8f0" }}
+                  style={{
+                    background: "#0d1117",
+                    border: "1px solid #1e2d3d",
+                    color: "#e2e8f0",
+                  }}
                   type={showToken ? "text" : "password"}
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
@@ -861,7 +908,12 @@ export default function VideoStreamTester() {
                 <button
                   onClick={() => setShowToken((v) => !v)}
                   className="mono absolute right-2 top-1/2 -translate-y-1/2 text-xs px-2 py-1 rounded"
-                  style={{ color: "#64748b", background: "transparent", border: "none", cursor: "pointer" }}
+                  style={{
+                    color: "#64748b",
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
                 >
                   {showToken ? "ẨN" : "HIỆN"}
                 </button>
@@ -870,10 +922,17 @@ export default function VideoStreamTester() {
             {token.trim() && (
               <div
                 className="mono text-xs mt-2 px-3 py-2 rounded-lg flex items-center gap-2"
-                style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", color: "#22c55e" }}
+                style={{
+                  background: "rgba(34,197,94,0.08)",
+                  border: "1px solid rgba(34,197,94,0.2)",
+                  color: "#22c55e",
+                }}
               >
                 <span>✓</span>
-                <span>Token đã nhập — sẽ gửi header <strong>Authorization: Bearer ...</strong></span>
+                <span>
+                  Token đã nhập — sẽ gửi header{" "}
+                  <strong>Authorization: Bearer ...</strong>
+                </span>
               </div>
             )}
           </div>
@@ -883,11 +942,19 @@ export default function VideoStreamTester() {
           <Field label="Endpoint sẽ gọi">
             <div
               className="mono text-sm px-4 py-3 rounded-lg break-all"
-              style={{ background: "#0d1117", border: "1px solid #1e2d3d", color: "#00d4ff" }}
+              style={{
+                background: "#0d1117",
+                border: "1px solid #1e2d3d",
+                color: "#00d4ff",
+              }}
             >
               <span
                 className="mono text-xs font-bold mr-2 px-2 py-0.5 rounded"
-                style={{ background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)" }}
+                style={{
+                  background: "rgba(34,197,94,0.15)",
+                  color: "#22c55e",
+                  border: "1px solid rgba(34,197,94,0.3)",
+                }}
               >
                 GET
               </span>
@@ -933,7 +1000,11 @@ export default function VideoStreamTester() {
             {!overlayHidden && (
               <div
                 className="absolute inset-0 flex items-center justify-center mono text-sm"
-                style={{ background: "rgba(0,0,0,0.7)", color: "#64748b", zIndex: 5 }}
+                style={{
+                  background: "rgba(0,0,0,0.7)",
+                  color: "#64748b",
+                  zIndex: 5,
+                }}
               >
                 {overlayMsg}
               </div>
@@ -971,14 +1042,24 @@ export default function VideoStreamTester() {
             <button
               onClick={loadVideo}
               className="mono text-xs font-bold px-5 py-2.5 rounded-lg transition-all"
-              style={{ background: "linear-gradient(135deg, #00d4ff, #0099bb)", color: "#000", border: "none", cursor: "pointer" }}
+              style={{
+                background: "linear-gradient(135deg, #00d4ff, #0099bb)",
+                color: "#000",
+                border: "none",
+                cursor: "pointer",
+              }}
             >
               ▶ Load &amp; Play
             </button>
             <button
               onClick={stopVideo}
               className="mono text-xs font-bold px-5 py-2.5 rounded-lg transition-all"
-              style={{ background: "rgba(239,68,68,0.15)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)", cursor: "pointer" }}
+              style={{
+                background: "rgba(239,68,68,0.15)",
+                color: "#ef4444",
+                border: "1px solid rgba(239,68,68,0.3)",
+                cursor: "pointer",
+              }}
             >
               ■ Stop
             </button>
@@ -986,7 +1067,9 @@ export default function VideoStreamTester() {
               className="mono text-xs flex items-center gap-2 flex-1 px-4 py-2.5 rounded-lg"
               style={{ background: "#0d1117", border: "1px solid #1e2d3d" }}
             >
-              <div className={`w-2 h-2 rounded-full shrink-0 ${dotClass[status]}`} />
+              <div
+                className={`w-2 h-2 rounded-full shrink-0 ${dotClass[status]}`}
+              />
               {statusText}
             </div>
           </div>
@@ -1029,16 +1112,28 @@ function CardTitle({ children }: { children: React.ReactNode }) {
       className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-4"
       style={{ color: "#00d4ff", fontFamily: "'JetBrains Mono', monospace" }}
     >
-      <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#00d4ff", boxShadow: "0 0 6px #00d4ff" }} />
+      <span
+        className="w-1.5 h-1.5 rounded-full"
+        style={{ background: "#00d4ff", boxShadow: "0 0 6px #00d4ff" }}
+      />
       {children}
     </div>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
-      <label className="block text-xs mb-1.5" style={{ color: "#64748b", fontFamily: "'JetBrains Mono', monospace" }}>
+      <label
+        className="block text-xs mb-1.5"
+        style={{ color: "#64748b", fontFamily: "'JetBrains Mono', monospace" }}
+      >
         {label}
       </label>
       {children}
